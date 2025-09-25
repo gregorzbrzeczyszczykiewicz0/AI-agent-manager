@@ -372,7 +372,9 @@ def handle_diff(task_id: UUID, request: TaskDiffActionRequest, current_key: Key 
     if task.user_id != current_key.user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
     if request.action == "accept":
-        task.current_instruction = task.current_instruction.copy(update={request.diff.field: request.diff.proposed})
+        task.current_instruction = task.current_instruction.model_copy(
+            update={request.diff.field: request.diff.proposed}
+        )
     elif request.action == "reject":
         pass
     else:
@@ -452,7 +454,7 @@ def update_summary(task_id: UUID, request: SummaryRequest, current_key: Key = De
     task = get_task(task_id)
     if task.user_id != current_key.user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
-    task.summary = TaskSummary(**request.dict())
+    task.summary = TaskSummary(**request.model_dump())
     store.tasks[task_id] = task
     return task
 
